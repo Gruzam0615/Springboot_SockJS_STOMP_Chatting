@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, Outlet } from "react-router-dom";
+
 import { over } from "stompjs";
 import SockJS from "sockjs-client";
 
@@ -45,6 +47,11 @@ const ChatRoomList = () => {
             .catch(error => console.log('error', error));
     }
 
+    const EnterChatRoom = (roomId) => {
+        let sender = "USER1";
+        window.location.href="/chatRoom/enter/"+roomId+"?usersName="+sender+"&status=ENTER";
+    }
+
     return(
         <div className="ChatRoomList">
             <h3>채팅방 목록</h3>
@@ -56,13 +63,23 @@ const ChatRoomList = () => {
                     :
                     chatRoomsList.map((item, index) => 
                     <li key={index}>
-                        <a href={`/chat/room/enter/${item.roomId}?usersName=PMJ`}>
-                        {item.roomName}
-                        </a>                        
+                        <NavLink
+                            // to={`/chat/room/enter/${item.roomId}?usersName=PMJ`}
+                            to={`/chatRoom/enter/${item.roomId}?usersName=PMJ`}
+                            onClick={() => {
+                                EnterChatRoom(item.roomId)
+                            }}
+                        >
+                            {item.roomName}
+                        </NavLink>
+                        {/* <a href={`/chat/room/enter/${item.roomId}?usersName=PMJ`}>
+                            {item.roomName}
+                        </a> */}
                     </li>
                     )
                 }
                 </ul>
+                <Outlet />
             </div>           
             {/* <button onClick={getChatRoomsList}>목록 불러오기</button> */}
             <br/>

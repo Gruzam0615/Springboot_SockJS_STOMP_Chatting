@@ -62,12 +62,37 @@ public class ChatRoomController {
         return result;
     }
 
+    /**
+     * "채팅방에 입장"을 수행하는 메서드
+     * @param roomId
+     * @param usersName
+     * @return
+     */
     @GetMapping("/room/enter/{roomId}")
-    public CustomResponse roomDetail(
+    public CustomResponse roomEnter(
         @PathVariable(value="roomId") String roomId,
         @RequestParam(value="usersName") String usersName
     ) {
+        log.info("[roomEnter] 사용자 {} 가 채팅방 {} 에 입장했습니다. ",usersName, roomId);
         CustomResponse result = new CustomResponse();
+
+        ChatRoom transaction = chatService.findByRoomId(roomId);
+        result.setResponseItem(transaction);
+        result.setResponseTime(LocalDateTime.now());
+
+        return result;
+    }
+
+    @GetMapping("/room/{roomId}")
+    public CustomResponse roomInfo(
+        @PathVariable(value="roomId") String roomId
+    ) {
+        CustomResponse result = new CustomResponse();
+        
+        ChatRoom transaction = chatService.findByRoomId(roomId);
+
+        result.setResponseItem(transaction);
+
         return result;
     }
 

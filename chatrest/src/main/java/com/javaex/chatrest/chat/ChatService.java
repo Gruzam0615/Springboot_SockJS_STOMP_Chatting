@@ -30,7 +30,6 @@ public class ChatService implements ChatRepository {
 
     @Autowired private ChatRepository chatRepository;
 
-
     /**
      * 채팅방을 새로 만드는 메서드입니다.
      * 매개변수는 채팅방 제목, 만든 사용자의 색인번호, 업체 색인번호 입니다.
@@ -42,6 +41,15 @@ public class ChatService implements ChatRepository {
         ChatRoom chatRoom = ChatRoom.create(roomName, usersIdx, 1L);
         chatRooms.put(chatRoom.getRoomId(), chatRoom);
         return chatRoom;
+    }
+
+    /**
+     * roomId와 일치하는 채팅방을 반환
+     * @param roomId
+     * @return
+     */
+    public ChatRoom findByRoomId(String roomId) {
+        return chatRooms.get(roomId);
     }
 
     @Override
