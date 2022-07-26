@@ -1,9 +1,11 @@
 package com.javaex.chatdemo.controller;
 
+import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
+import com.javaex.chatdemo.model.ChatFileMessage;
 import com.javaex.chatdemo.model.ChatMessage;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,11 @@ public class MessageController {
         if(ChatMessage.MessageType.ENTER.equals(message.getMessageType())) {
             message.setMessage(message.getSender() + "님이 입장했습니다.");
         }
+        sendingOperations.convertAndSend("/topic/chat/room/" + message.getRoomId(), message);
+    }
+
+    @MessageMapping("/chat/sendFileMessage")
+    public void sendFile(ChatFileMessage message) {
         sendingOperations.convertAndSend("/topic/chat/room/" + message.getRoomId(), message);
     }
 

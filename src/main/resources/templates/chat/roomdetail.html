@@ -25,12 +25,12 @@
             <label class="input-group-text">내용</label>
         </div>
         <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage">
-        <input type="file" id="fileAttach" class="form-control fileAttach" value="" v-model="fileAttach">
+        <input type="file" id="fileMessage" class="form-control fileMessage" v-model="fileMessage">
         <div class="input-group-append">
             <button class="btn btn-success" type="button" @click="sendMessage">보내기</button>
         </div>
         <div class="input-group-append">
-            <button id="sendFileMessageBtn" class="btn btn-primary" type="button" @click="sendFileAttach">파일+</button>
+            <button id="sendAttachFileBtn" class="btn btn-primary" type="button" @click="sendAttachFile">파일+</button>
         </div>
     </div>
 </div>
@@ -57,7 +57,7 @@
             room: {},
             sender: '',
             message: '',
-            fileAttach: '',
+            fileMessage: '',
             messages: [],           
             sendDate: "",
         },
@@ -71,8 +71,6 @@
                 console.log(crntDate.ShowCurrentDate());
                 axios.get('/chat/room/'+this.roomId)
                     .then((response) => {
-                        console.log("#####")
-                        console.log(response);
                         this.room = response.data; 
                     });
             },
@@ -86,38 +84,37 @@
                 }));
                 this.message = '';
             },
-            sendFileAttach: () => {
-                const FileAttachForm = document.querySelector("#fileAttach");
+            sendAttachFile: () => {
+                const FileAttachForm = document.querySelector("#fileMessage");
                 FileAttachForm.click();
                 FileAttachForm.addEventListener("change", (e)=> {
                     let file = e.target.files[0];
-                    console.log(file);
-                    ws.send("/app/chat/message", {}, JSON.stringify({
+                    let fr = new FileReader();
+
+                    fr.readAsDataURL(file);
+
+                    ws.send("/app/chat/sendFileMessage", {}, JSON.stringify({
                         messageType: "FILE",
                         roomId: this.roomId,
                         sender: this.sender,
-                        message: JSON.stringify({
-                            name: file.name,
-                            lastModified: file.lastModified,
-                            lastModifiedDate: file.lastModifiedDate,
-                            type: file.type,
-                            size: file.size
-                        }),
+                        fileMessage: file,
                         sendDate: crntDate.ShowCurrentDate()
                     }));
                 });
                 
             },
-            recvMessage: function(recv) {
-                // 위로 갈수록 가장 최근 메시지
+            recvMessage: function(recv) {                
                 /*
-                    this.messages.unshift({}) 
+                // 위로 갈수록 가장 최근 메시지
+                this.messages.unshift({}) 
                 */
+
                 // 아래로 갈수록 가장 최근 메시지
                 this.messages.push({
-                    "messageType":recv.type,
-                    "sender":recv.type=="ENTER"?'[알림]':recv.sender,
+                    "messageType":recv.messageType,
+                    "sender":recv.messageType=="ENTER"?'[알림]':recv.sender,
                     "message":recv.message,
+                    "fileMessage": recv.fileMessage==null? "사진이면 사진":"사진아니면 다른거",
                     "sendDate": recv.sendDate
                 });
             }
