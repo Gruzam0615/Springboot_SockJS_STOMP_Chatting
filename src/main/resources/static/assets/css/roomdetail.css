@@ -1,0 +1,13 @@
+[v-cloak] {
+    display: none;
+}
+
+.chatMessageBoard {
+    /* width: 80%; */
+    height: 400px;
+    overflow-y: scroll;
+}
+
+.fileAttach {
+    display: none;
+}
