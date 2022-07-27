@@ -12,27 +12,40 @@
 </head>
 <body>
 <div class="container" id="app" v-cloak>
-    <div>
-        <h2>{{room.roomName}}</h2>
+<div class="row">
+    <div class="col-5">
+        <h2>{{room.roomName}}</h2>        
     </div>
+    <div class="col-5">
+        <span>현재 사용자명: </span>
+        <span>{{sender}}</span>
+    </div>
+    <div class="col bg-custom-danger text-white">
+        <h3 v-on:click="leaveChatRoom">나가기</h3>
+    </div>
+</div>
+<div class="row">
     <ul class="list-group chatMessageBoard">
         <li class="list-group-item" v-for="message in messages">
             {{message.sender}} - {{message.message}}
         </li>
     </ul>
+</div>
+<div class="row">
     <div class="input-group">
         <div class="input-group-prepend">
             <label class="input-group-text">내용</label>
         </div>
-        <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage">
+        <input type="text" id="message" class="form-control" v-model="message" v-on:keypress.enter="sendMessage">
         <input type="file" id="fileMessage" class="form-control fileMessage" v-model="fileMessage">
         <div class="input-group-append">
             <button class="btn btn-success" type="button" @click="sendMessage">보내기</button>
         </div>
         <div class="input-group-append">
-            <button id="sendAttachFileBtn" class="btn btn-primary" type="button" @click="sendAttachFile">파일+</button>
+            <button id="fileAttachBtn" class="btn btn-primary" type="button" v-on:click="sendFileMessage">파일+</button>
         </div>
     </div>
+</div>
 </div>
 <!-- JavaScript -->
 <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
@@ -48,16 +61,18 @@
     var ws = Stomp.over(sock);
     var reconnect = 0;
 
-    let crntDate = new CurrentDate();
+    let crntDate = new CurrentDate();   
+
     // vue.js
-    var vm = new Vue({        
+    var vm = new Vue({
+       
         el: '#app',
         data: {
             roomId: '',
             room: {},
             sender: '',
-            message: '',
-            fileMessage: '',
+            message: null,
+            fileMessage: null,
             messages: [],           
             sendDate: "",
         },
@@ -75,33 +90,54 @@
                     });
             },
             sendMessage: function() {
-                ws.send("/app/chat/message", {}, JSON.stringify({
-                    messageType:"TALK", 
-                    roomId:this.roomId, 
-                    sender:this.sender, 
-                    message:this.message, 
-                    sendDate: crntDate.ShowCurrentDate()
-                }));
-                this.message = '';
-            },
-            sendAttachFile: () => {
-                const FileAttachForm = document.querySelector("#fileMessage");
-                FileAttachForm.click();
-                FileAttachForm.addEventListener("change", (e)=> {
-                    let file = e.target.files[0];
-                    let fr = new FileReader();
-
-                    fr.readAsDataURL(file);
-
-                    ws.send("/app/chat/sendFileMessage", {}, JSON.stringify({
-                        messageType: "FILE",
-                        roomId: this.roomId,
-                        sender: this.sender,
-                        fileMessage: file,
+                const _MESSAGE = document.querySelector("#message");
+                
+                if(_MESSAGE.value !== "") {
+                    // console.log("NOT NULL")
+                    ws.send("/app/chat/message", {}, JSON.stringify({
+                        messageType:"TALK", 
+                        roomId:this.roomId, 
+                        sender:this.sender, 
+                        message:this.message, 
                         sendDate: crntDate.ShowCurrentDate()
                     }));
+                    this.message = '';
+                }
+            },
+            sendFileMessage: () => {
+                let fr = new FileReader();
+
+                const _FILE_MESSAGE = document.querySelector("#fileMessage");
+                _FILE_MESSAGE.click();
+                _FILE_MESSAGE.addEventListener("change", () => {
+                    console.log(`$ File: ${_FILE_MESSAGE.files[0]}`);
+
+                    fr.readAsDataURL(_FILE_MESSAGE.files[0]);
+                    // fr.readAsBinaryString(_FILE_MESSAGE.files[0]);
+                    // fr.readAsArrayBuffer(_FILE_MESSAGE.files[0]);
+                    
+                    fr.onloadend = (e) => {
+                        vm.$data.fileMessage = e.target.result;
+                        console.log(vm.$data.fileMessage);
+                        ws.send("/app/chat/message", {}, JSON.stringify({
+                            messageType: "FILE", 
+                            roomId: localStorage.getItem('wschat.roomId'),
+                            sender: localStorage.getItem('wschat.sender'),
+                            message: vm.$data.fileMessage,
+                            sendDate: crntDate.ShowCurrentDate()
+                        }));               
+                    }
                 });
                 
+
+                // ws.send("/app/chat/fileMessage", {}, JSON.stringify({
+                //     messageType:"FILE", 
+                //     roomId: this.roomId, 
+                //     sender: this.sender, 
+                //     message: this.message,
+                //     sendDate: crntDate.ShowCurrentDate()
+                // }));
+                // this.message = "";
             },
             recvMessage: function(recv) {                
                 /*
@@ -117,6 +153,15 @@
                     "fileMessage": recv.fileMessage==null? "사진이면 사진":"사진아니면 다른거",
                     "sendDate": recv.sendDate
                 });
+            },
+            leaveChatRoom: () => {
+                ws.send("/app/chat/message", {}, JSON.stringify({
+                    messageType:"LEAVE", 
+                    roomId: vm.$data.roomId, 
+                    sender: vm.$data.sender,
+                    sendDate: crntDate.ShowCurrentDate()
+                }));
+                location.href="/chat/room/";
             }
         }
     });

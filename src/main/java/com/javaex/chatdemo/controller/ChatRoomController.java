@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -43,7 +44,15 @@ public class ChatRoomController {
         @RequestParam("name") String roomName,
         @RequestParam("usersName") String usersName
     ) {
-        return chatService.createRoom(roomName, Long.parseLong("1"));
+        return chatService.createChatRoom(roomName, Long.parseLong("1"));
+    }
+
+    @PutMapping("/room")
+    @ResponseBody
+    public List<ChatRoom> deleteRoom(
+        @RequestParam("roomId") String roomId
+    ) {
+        return chatService.deleteChatRoom(roomId);
     }
     // @PostMapping("/room")
     // @ResponseBody

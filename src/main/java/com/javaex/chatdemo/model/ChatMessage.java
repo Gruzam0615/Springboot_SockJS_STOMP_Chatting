@@ -3,16 +3,12 @@ package com.javaex.chatdemo.model;
 import lombok.Data;
 
 @Data
-public class ChatMessage {
-    
-    public enum MessageType {
-        ENTER, TALK, LEAVE
-    }
+public class ChatMessage {    
     
     private MessageType messageType;
     private String roomId;   
     private String sender;
-    private String message;
+    private Object message;
     private String sendDate;
 
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 
 import com.javaex.chatdemo.model.ChatFileMessage;
 import com.javaex.chatdemo.model.ChatMessage;
+import com.javaex.chatdemo.model.MessageType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,13 +27,20 @@ public class MessageController {
 
     @MessageMapping("/chat/message")
     public void enter(ChatMessage message) {
-        if(ChatMessage.MessageType.ENTER.equals(message.getMessageType())) {
+        if((message.getMessageType()).equals(MessageType.ENTER)) {
             message.setMessage(message.getSender() + "님이 입장했습니다.");
         }
+
+        // if(ChatMessage.MessageType.LEAVE.equals(message.getMessageType())) {
+        if((message.getMessageType()).equals(MessageType.LEAVE)) {
+            message.setMessage(message.getSender() + "님이 퇴장했습니다.");
+            log.info("## User: {} has left RoomId: {}", message.getSender(), message.getRoomId());
+        }
+
         sendingOperations.convertAndSend("/topic/chat/room/" + message.getRoomId(), message);
     }
 
-    @MessageMapping("/chat/sendFileMessage")
+    @MessageMapping("/chat/fileMessage")
     public void sendFile(ChatFileMessage message) {
         sendingOperations.convertAndSend("/topic/chat/room/" + message.getRoomId(), message);
     }

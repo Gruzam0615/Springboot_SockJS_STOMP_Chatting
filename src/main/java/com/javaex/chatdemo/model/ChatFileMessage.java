@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ChatFileMessage {
     
-    private String messageType;
+    private MessageType messageType;
     private String roomId;
     private String sender;
     private Object fileMessage;

@@ -63,12 +63,19 @@ public class ChatService implements ChatRepository {
      * @param usersIdx
      * @return
      */
-    public ChatRoom createRoom(String roomName, Long usersIdx) {
+    public ChatRoom createChatRoom(String roomName, Long usersIdx) {
         ChatRoom chatRoom = ChatRoom.create(roomName, usersIdx);
         chatRooms.put(chatRoom.getRoomId(), chatRoom);
         log.info("## UsersIdx: {} create ChatROOM RoomId: {}\n## T: {}", Long.toString(usersIdx), chatRoom.getRoomId(), LocalDateTime.now());
         // chatRepository.createChatRoom(chatRoom);
         return chatRoom;
+    }
+    
+    public List<ChatRoom> deleteChatRoom(String roomId) {
+        chatRooms.remove(roomId);
+        List<ChatRoom> result = new ArrayList<>(chatRooms.values());
+    
+        return result;
     }
 
     @Override
