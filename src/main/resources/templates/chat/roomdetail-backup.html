@@ -32,12 +32,17 @@
     </ul>
 </div>
 <div class="row">
-    <div class="input-group">       
-        <label class="input-group-text">내용</label>        
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <label class="input-group-text">내용</label>
+        </div>
         <input type="text" id="message" class="form-control" v-model="message" v-on:keypress.enter="sendMessage">
-        <input class="btn btn-success" type="button" @click="sendMessage" value="보내기"/>
-        <input type="file" id="fileMessage" class="form-control" v-model="fileMessage" @change="fileMessageChange">
-        <label for="fileMessage" class="input-group-text text-white bg-primary" type="button">파일+</label>
+        <input type="file" id="fileMessage" class="form-control fileMessage" v-model="fileMessage">
+        <div class="input-group-append">
+            <button class="btn btn-success" type="button" @click="sendMessage">보내기</button>
+        </div>
+        <div class="input-group-append">
+            <button id="fileAttachBtn" class="btn btn-primary" type="button" v-on:click="sendFileMessage">파일+</button>
         </div>
     </div>
 </div>
@@ -57,11 +62,12 @@
     var ws = Stomp.over(sock);
     var reconnect = 0;
 
-    const crntDate = new CurrentDate();
-    const _FILE_MESSAGE = document.querySelector("#fileMessage");
+    let crntDate = new CurrentDate();
+
     const SaveFileBlob = () => {
 
     }
+
     const SaveFileArrayBuffer = (arrayBuffer, fileName) => {
         const a_Tag = document.createElement("a");
         let parts = [];
@@ -86,22 +92,7 @@
             this.sender = localStorage.getItem('wschat.sender');
             this.findRoom();
         },
-        methods: {
-            fileMessageChange: (e) => {
-                const fileList = e.target.files;
-                const file = fileList[0];
-                const fileReader = new FileReader();              
-
-                fileReader.onload = (e) => {
-                    this.message = file.name;
-                    this.fileMessage = e.target.result;
-                    console.log(e.target.result);
-                    // console.log(this.fileMessage);
-                    vm.sendFileMessage();
-                }
-                fileReader.readAsBinaryString(file);
-                
-            },
+        methods: {            
             findRoom: function() {
                 console.log(crntDate.ShowCurrentDate());
                 axios.get('/chat/room/'+this.roomId)
@@ -125,16 +116,29 @@
                 }
             },
             sendFileMessage: () => {
-                console.log(vm.$data.fileMessage);
-                ws.send("/app/chat/message", {}, JSON.stringify({
-                    messageType:"FILE", 
-                    roomId: vm.$data.roomId,
-                    sender: vm.$data.sender,
-                    message: this.message,
-                    fileMessage: vm.$data.fileMessage,
-                    sendDate: crntDate.ShowCurrentDate()
-                }));
-                this.message = '';
+                let fr = new FileReader();
+                const _FILE_MESSAGE = document.querySelector("#fileMessage");
+                _FILE_MESSAGE.click();
+                _FILE_MESSAGE.addEventListener("change", () => {
+                    console.log(`% File: `);
+                    console.log(_FILE_MESSAGE.files[0]);
+                    let fileName = _FILE_MESSAGE.files[0].name;
+
+                    // fr.readAsDataURL(_FILE_MESSAGE.files[0]);
+                    // fr.readAsBinaryString(_FILE_MESSAGE.files[0]);
+                    fr.readAsArrayBuffer(_FILE_MESSAGE.files[0]);
+                    
+                    fr.onloadend = (e) => {
+                        ws.send("/app/chat/message", {}, JSON.stringify({
+                            messageType: "FILE", 
+                            roomId: localStorage.getItem('wschat.roomId'),
+                            sender: localStorage.getItem('wschat.sender'),
+                            message: fileName,
+                            fileMessage: e.target.result,
+                            sendDate: crntDate.ShowCurrentDate()
+                        }));               
+                    }
+                });
             },
             recvMessage: function(recv) {                
                 /*
@@ -143,15 +147,24 @@
                 */
 
                 // 아래로 갈수록 가장 최근 메시지
-                console.log("% Receive: ")
-                console.log(recv);              
-                this.messages.push({
-                    "messageType": recv.messageType,
-                    "sender": recv.messageType=="ENTER"?'[알림]':recv.sender,
-                    "message": recv.message,
-                    "fileMessage": recv.message,
-                    "sendDate": recv.sendDate
-                });
+                if(recv.messageType != "FILE") {                
+                    this.messages.push({
+                        "messageType":recv.messageType,
+                        "sender":recv.messageType=="ENTER"?'[알림]':recv.sender,
+                        "message":recv.message,
+                        "fileMessage": null,
+                        "sendDate": recv.sendDate
+                    });
+                }
+                else {
+                    this.messages.push({
+                        "messageType":recv.messageType,
+                        "sender": recv.sender + "[FILE] ",
+                        "message":recv.message,
+                        "fileMessage": recv.fileMessage,
+                        "sendDate": recv.sendDate
+                    });
+                }
             },
             leaveChatRoom: () => {
                 ws.send("/app/chat/message", {}, JSON.stringify({
@@ -161,7 +174,7 @@
                     sendDate: crntDate.ShowCurrentDate()
                 }));
                 location.href="/chat/room/";
-            }            
+            }
         }
     });
 

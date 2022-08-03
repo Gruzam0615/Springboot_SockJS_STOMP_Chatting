@@ -5,7 +5,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
-import com.javaex.chatdemo.model.ChatFileMessage;
 import com.javaex.chatdemo.model.ChatMessage;
 import com.javaex.chatdemo.model.MessageType;
 
@@ -37,11 +36,6 @@ public class MessageController {
             log.info("## User: {} has left RoomId: {}", message.getSender(), message.getRoomId());
         }
 
-        sendingOperations.convertAndSend("/topic/chat/room/" + message.getRoomId(), message);
-    }
-
-    @MessageMapping("/chat/fileMessage")
-    public void sendFile(ChatFileMessage message) {
         sendingOperations.convertAndSend("/topic/chat/room/" + message.getRoomId(), message);
     }
 

@@ -9,6 +9,7 @@ public class ChatMessage {
     private String roomId;   
     private String sender;
     private Object message;
+    private Object fileMessage;
     private String sendDate;
 
 }
