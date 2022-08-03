@@ -28,7 +28,10 @@
     <ul class="list-group chatMessageBoard">
         <li class="list-group-item" v-for="message in messages">
             {{message.sender}} - {{message.message}}
-        </li>
+            <span v-if="fileMessage != null">
+                다운로드
+            </span>
+        </li>       
     </ul>
 </div>
 <div class="row">
@@ -125,7 +128,6 @@
                 }
             },
             sendFileMessage: () => {
-                console.log(vm.$data.fileMessage);
                 ws.send("/app/chat/message", {}, JSON.stringify({
                     messageType:"FILE", 
                     roomId: vm.$data.roomId,
@@ -134,7 +136,9 @@
                     fileMessage: vm.$data.fileMessage,
                     sendDate: crntDate.ShowCurrentDate()
                 }));
-                this.message = '';
+                vm.$data.message = "";
+                vm.$data.fileMessage = null;
+                
             },
             recvMessage: function(recv) {                
                 /*
@@ -143,8 +147,6 @@
                 */
 
                 // 아래로 갈수록 가장 최근 메시지
-                console.log("% Receive: ")
-                console.log(recv);              
                 this.messages.push({
                     "messageType": recv.messageType,
                     "sender": recv.messageType=="ENTER"?'[알림]':recv.sender,
