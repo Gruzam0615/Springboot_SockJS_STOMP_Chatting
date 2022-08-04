@@ -2,7 +2,6 @@ package com.javaex.chatdemo.websocket;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -19,7 +18,10 @@ public class CustomWebSocketConfig implements WebSocketConfigurer, WebSocketMess
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/chat").setAllowedOriginPatterns("*").withSockJS();
+        registry
+            .addEndpoint("/ws/chat")
+            .setAllowedOriginPatterns("*")
+            .withSockJS();
     }
 
     /**
@@ -45,7 +47,8 @@ public class CustomWebSocketConfig implements WebSocketConfigurer, WebSocketMess
      */
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-        // about 9MB
+        // 전달되는 메시지 용량을 9MB로 제한한다.
         registration.setMessageSizeLimit(900 * 1024 * 1024);
     }
+
 }

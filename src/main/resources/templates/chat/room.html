@@ -29,14 +29,12 @@
         </div>
     </div>
     <ul class="list-group">
-        <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.roomId">           
-        <span class="align-baseline" v-on:click="enterRoom(item.roomId)">
-            {{item.roomName}}
-        </span>
-        <span> | </span>
-        <span class="align-text-bottom" v-on:click="deleteRoom(item.roomId)">
-            x
-        </span>
+        <li class="list-group-item" v-for="item in chatrooms" v-bind:key="item.roomId"> 
+            <div class="list-group list-group-horizontal">
+                <span class="list-group-item list-group-item-action" v-on:click="enterRoom(item.roomId)">{{item.roomName}}</span>
+                <span class="list-group-item list-group-item-action" v-on:click="deleteRoom(item.roomId)">X</span>
+            </div>          
+            
         </li>
     </ul>
 </div>

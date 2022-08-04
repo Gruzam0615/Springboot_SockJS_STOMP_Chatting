@@ -53,17 +53,9 @@ public class ChatRoomController {
         @RequestParam("roomId") String roomId
     ) {
         return chatService.deleteChatRoom(roomId);
-    }
-    // @PostMapping("/room")
-    // @ResponseBody
-    // public int createRoom(
-    //     @RequestParam("roomName") String roomName
-    // ) {
-    //     ChatRoom cr = new ChatRoom(roomName, Long.parseLong("1"));
-    //     return chatService.CreateChatRoom(cr);
-    // }
+    }   
 
-    // 채팅방 입장 화면
+    // roomId에 해당하는 채팅방에 입장
     @GetMapping("/room/enter/{roomId}")
     public String roomDetail(Model model, 
         @PathVariable String roomId,
@@ -74,7 +66,7 @@ public class ChatRoomController {
         log.info("## User: {} get in RoomId: {}\n## T: {}", usersName, roomId, LocalDateTime.now());
         return "/chat/roomdetail";
     }
-    // 특정 채팅방 조회
+    // roomId에 해당하는 채팅방 조회
     @GetMapping("/room/{roomId}")
     @ResponseBody
     public ChatRoom roomInfo(@PathVariable String roomId, Model model) {

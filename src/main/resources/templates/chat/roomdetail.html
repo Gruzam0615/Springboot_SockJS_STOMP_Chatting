@@ -106,7 +106,7 @@
                 
             },
             findRoom: function() {
-                console.log(crntDate.ShowCurrentDate());
+                // console.log(crntDate.ShowCurrentDate());
                 axios.get('/chat/room/'+this.roomId)
                     .then((response) => {
                         this.room = response.data; 
@@ -149,7 +149,8 @@
                 // 아래로 갈수록 가장 최근 메시지
                 this.messages.push({
                     "messageType": recv.messageType,
-                    "sender": recv.messageType=="ENTER"?'[알림]':recv.sender,
+                    "sender": recv.messageType == "ENTER" ? '[알림]' : 
+                        recv.messageType == "LEAVE" ? "[알림]" : recv.sender,
                     "message": recv.message,
                     "fileMessage": recv.message,
                     "sendDate": recv.sendDate
@@ -166,10 +167,24 @@
             }            
         }
     });
+    const roomExistCheck = (roomId) => {
+        const URL = "/chat/room/" + roomId;
 
-    function connect() {
+        const request = fetch(URL);
+        return request
+            .then(response => response.json())
+            .then(result => {
+                if(roomId == result.roomId) return 1;
+                else return 0;
+            })
+            .catch(err => { return 0; })
+    }
+
+    async function connect() {
         // pub/sub event
-        ws.connect({}, function(frame) {
+        let roomCheck = await roomExistCheck(vm.$data.roomId);
+        if(roomCheck == 1) {
+            ws.connect({}, function(frame) {
             ws.subscribe("/topic/chat/room/"+vm.$data.roomId, function(message) {
                 var recv = JSON.parse(message.body);
                 vm.recvMessage(recv);
@@ -180,16 +195,26 @@
                 sender:vm.$data.sender,
                 sendDate: crntDate.ShowCurrentDate()
             }));
-        }, function(error) {
-            if(reconnect++ <= 5) {
-                setTimeout(function() {
-                    console.log("connection reconnect");
-                    sock = new SockJS("/ws/chat");
-                    ws = Stomp.over(sock);
-                    connect();
-                },10*1000);
-            }
-        });
+            }, function(error) {
+                if(reconnect++ <= 5) {
+                    setTimeout(function() {
+                        console.log("connection reconnect");
+                        sock = new SockJS("/ws/chat");
+                        ws = Stomp.over(sock);
+                        connect();
+                    },10*1000);
+                }
+            });
+        }
+        else {
+            alert("채팅방이 존재하지 않습니다.\n이전 페이지로 돌아갑니다.");
+            console.log("조건에 맞는 채팅방이 존재하지 않습니다.");
+            location.href="/chat/room";
+            location.go(-1);
+        }
+
+
+        
     }
     connect();
 </script>
