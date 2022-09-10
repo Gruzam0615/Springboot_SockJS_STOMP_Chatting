@@ -9,6 +9,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.javaex.chatdemo.model.ChatMessage;
@@ -37,24 +39,29 @@ public class MessageController {
     public void enter(ChatMessage message) {
         if((message.getMessageType()).equals(MessageType.ENTER)) {
             message.setMessage(message.getSender() + "님이 입장했습니다.");
+            log.info(message.toString());
             chatMessageService.addMessage(message);
+            chatMessageService.save(message);
         }
 
         if((message.getMessageType()).equals(MessageType.TALK)) {
-            log.info("## {} : {} - Room: {} _ Time: {}", message.getSender(), message.getMessage(), message.getRoomId(), message.getSendDate());
+            log.info(message.toString());
             chatMessageService.addMessage(message);
+            chatMessageService.save(message);
         }
 
         if((message.getMessageType()).equals(MessageType.FILE)) {
-            log.info("## {} : {} - Room: {} _ Time: {}", message.getSender(), message.getMessage(), message.getRoomId(), message.getSendDate());
+            log.info(message.toString());
             chatMessageService.addMessage(message);
+            chatMessageService.save(message);
         }
 
         // if(ChatMessage.MessageType.LEAVE.equals(message.getMessageType())) {
         if((message.getMessageType()).equals(MessageType.LEAVE)) {
             message.setMessage(message.getSender() + "님이 퇴장했습니다.");
-            log.info("## User: {} has left RoomId: {}", message.getSender(), message.getRoomId());
+            log.info(message.toString());
             chatMessageService.addMessage(message);
+            chatMessageService.save(message);
         }    
 
         sendingOperations.convertAndSend("/topic/chat/room/" + message.getRoomId(), message);
@@ -65,6 +72,14 @@ public class MessageController {
         return chatMessageService.readMessagesList();
     }
 
+    // @GetMapping("/chat/message/readByRoomId/{roomId}")
+    // public List<ChatMessage> readByRoomId(@PathVariable String roomId) {
+    //     return chatMessageService.readMessagesListByRoomId(roomId);
+    // }
 
+    @GetMapping("/chat/message/readByRoomId/{roomId}")
+    public List<ChatMessage> readByRoomId(@PathVariable String roomId) {
+        return chatMessageService.readMessagesListByRoomIdFromDB(roomId);
+    }
 
 }

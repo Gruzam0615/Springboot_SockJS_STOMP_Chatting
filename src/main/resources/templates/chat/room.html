@@ -54,7 +54,10 @@
         },
         methods: {
             findAllRoom: function() {
-                axios.get('/chat/rooms').then(response => { this.chatrooms = response.data; });
+                // None MySQL
+                // axios.get('/chat/rooms').then(response => { this.chatrooms = response.data; });
+                // Use MySQL
+                axios.get('/chat/selectAllRoomsFromDB').then(response => { this.chatrooms = response.data; });                
             },
             createRoom: function() {
                 if("" === this.room_name) {

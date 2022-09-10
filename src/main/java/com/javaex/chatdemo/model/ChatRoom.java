@@ -13,39 +13,33 @@ import javax.persistence.Table;
 import lombok.Data;
 
 @Data
-@Entity(name="LiveChat")
-@Table(name="LiveChat")
+@Entity
+@Table(name="ChatRoom")
 public class ChatRoom {
    
     // 방 고유키
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
 
-    @Id
-    @Column
-    private String roomId;
+   
+    @Column private String roomId;
 
     // 방 제목
-    @Column
-    private String roomName;
+    @Column private String roomName;
 
     // 방 만든 사람 (회원의 색인 번호)
-    @Column
-    private Long usersIdx;
+    @Column private Long usersIdx;
 
-    @Column
-    private Long companysIdx;
+    @Column private Long companysIdx;
 
     // 채팅 로그의 위치가 담긴 컬럼
-    @Column
-    private String dataInfo;
+    @Column private String dataInfo;
 
     // 채팅방이 생성된 타임스탬프
-    @Column
-    private LocalDateTime createdDate;
+    @Column private LocalDateTime createdDate;
 
-    @Column
-    private int usable;
+    @Column private int usable;
 
     public static ChatRoom create(String roomName, Long usersIdx) {
         ChatRoom room = new ChatRoom();
@@ -53,7 +47,7 @@ public class ChatRoom {
         room.roomName = roomName;
         room.usersIdx = usersIdx;
         room.companysIdx = Long.parseLong("1");
-        room.dataInfo = "데이터 로그파일 주소";
+        room.dataInfo = "";
         room.createdDate = LocalDateTime.now();
         room.usable = 1;
 

@@ -28,7 +28,7 @@
     <ul class="list-group chatMessageBoard">
         <li class="list-group-item" v-for="message in messages">
             {{message.sender}} - {{message.message}}
-            <span v-if="fileMessage != null">
+            <span v-if="message.fileMessage != null">
                 다운로드
             </span>
         </li>       
@@ -88,6 +88,12 @@
             this.roomId = localStorage.getItem('wschat.roomId');
             this.sender = localStorage.getItem('wschat.sender');
             this.findRoom();
+            axios.get("/chat/message/readByRoomId/"+this.roomId)
+                .then(result => {
+                    result.data.map((item) => {
+                        this.messages.push(item);
+                    })
+                })
         },
         methods: {
             fileMessageChange: (e) => {
@@ -139,7 +145,7 @@
                 vm.$data.message = "";
                 vm.$data.fileMessage = null;
                 
-            },
+            },           
             recvMessage: function(recv) {                
                 /*
                 // 위로 갈수록 가장 최근 메시지
@@ -155,7 +161,7 @@
                     "fileMessage": recv.message,
                     "sendDate": recv.sendDate
                 });
-            },
+            },           
             leaveChatRoom: () => {
                 ws.send("/app/chat/message", {}, JSON.stringify({
                     messageType:"LEAVE", 
@@ -185,16 +191,16 @@
         let roomCheck = await roomExistCheck(vm.$data.roomId);
         if(roomCheck == 1) {
             ws.connect({}, function(frame) {
-            ws.subscribe("/topic/chat/room/"+vm.$data.roomId, function(message) {
-                var recv = JSON.parse(message.body);
-                vm.recvMessage(recv);
-            })
-            ws.send("/app/chat/message", {}, JSON.stringify({
-                messageType:'ENTER',
-                roomId:vm.$data.roomId,
-                sender:vm.$data.sender,
-                sendDate: crntDate.ShowCurrentDate()
-            }));
+                ws.subscribe("/topic/chat/room/"+vm.$data.roomId, function(message) {
+                    var recv = JSON.parse(message.body);
+                    vm.recvMessage(recv);   
+                })
+                ws.send("/app/chat/message", {}, JSON.stringify({
+                    messageType:'ENTER',
+                    roomId:vm.$data.roomId,
+                    sender:vm.$data.sender,
+                    sendDate: crntDate.ShowCurrentDate()
+                }));
             }, function(error) {
                 if(reconnect++ <= 5) {
                     setTimeout(function() {

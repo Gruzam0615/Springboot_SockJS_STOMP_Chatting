@@ -20,13 +20,13 @@ import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuer
 import org.springframework.stereotype.Service;
 
 import com.javaex.chatdemo.model.ChatRoom;
-import com.javaex.chatdemo.repository.ChatRepository;
+import com.javaex.chatdemo.repository.ChatRoomRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class ChatService implements ChatRepository {    
+public class ChatRoomService implements ChatRoomRepository {    
 
     private Map<String, ChatRoom> chatRooms;
         
@@ -36,7 +36,21 @@ public class ChatService implements ChatRepository {
     }
 
     @Autowired
-    private ChatRepository chatRepository;
+    private ChatRoomRepository chatRoomRepository;
+
+    /**
+     * 채팅방 생성하기
+     * @param roomName
+     * @param usersIdx
+     * @return
+     */
+    public ChatRoom createChatRoom(String roomName, Long usersIdx) {
+        ChatRoom chatRoom = ChatRoom.create(roomName, usersIdx);
+        chatRooms.put(chatRoom.getRoomId(), chatRoom);
+        log.info("## UsersIdx: {} create ChatROOM RoomId: {}\n## T: {}", Long.toString(usersIdx), chatRoom.getRoomId(), LocalDateTime.now());
+        chatRoomRepository.createChatRoom(chatRoom);
+        return chatRoom;
+    }
 
     /**
      * 모든 채팅방 목록보기
@@ -57,18 +71,28 @@ public class ChatService implements ChatRepository {
         return chatRooms.get(roomId);
     }
 
-    /**
-     * 채팅방 생성하기
-     * @param roomName
-     * @param usersIdx
-     * @return
-     */
-    public ChatRoom createChatRoom(String roomName, Long usersIdx) {
-        ChatRoom chatRoom = ChatRoom.create(roomName, usersIdx);
-        chatRooms.put(chatRoom.getRoomId(), chatRoom);
-        log.info("## UsersIdx: {} create ChatROOM RoomId: {}\n## T: {}", Long.toString(usersIdx), chatRoom.getRoomId(), LocalDateTime.now());
-        // chatRepository.createChatRoom(chatRoom);
-        return chatRoom;
+    @Override
+    public ChatRoom findChatRoomByRoomIdFromDB(String roomId) {
+        ChatRoom chatRoomFromDB = chatRoomRepository.findChatRoomByRoomIdFromDB(roomId);
+        if(chatRooms.get(roomId) == null) {
+            chatRooms.put(roomId, chatRoomFromDB);
+            return chatRooms.get(roomId);
+        }
+        else {
+            return chatRooms.get(roomId);
+        }
+    }
+
+    public List<ChatRoom> selectAllRoomsFromDB() {
+        List<ChatRoom> result = chatRoomRepository.selectAllRoomsFromDB();        
+        for(int i = 0; i < result.size(); i++) {
+            chatRooms.put(result.get(i).getRoomId(), result.get(i));
+        }
+        return result;
+    }
+
+    public List<ChatRoom> selectRoomsByUsersIdxFromDB(Long usersIdx) {
+        return chatRoomRepository.selectRoomsByUsersIdxFromDB(usersIdx);
     }
     
     public List<ChatRoom> deleteChatRoom(String roomId) {
