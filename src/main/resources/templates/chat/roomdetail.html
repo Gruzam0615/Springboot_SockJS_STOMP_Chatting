@@ -28,9 +28,9 @@
     <ul class="list-group chatMessageBoard">
         <li class="list-group-item" v-for="message in messages">
             {{message.sender}} - {{message.message}}
-            <span v-if="message.fileMessage != null">
+            <a v-if="message.messageType == 'FILE'">
                 다운로드
-            </span>
+            </a>
         </li>       
     </ul>
 </div>
@@ -99,17 +99,18 @@
             fileMessageChange: (e) => {
                 const fileList = e.target.files;
                 const file = fileList[0];
-                const fileReader = new FileReader();              
+                const fileReader = new FileReader();   
 
                 fileReader.onload = (e) => {
                     this.message = file.name;
                     this.fileMessage = e.target.result;
-                    console.log(e.target.result);
-                    // console.log(this.fileMessage);
+                    // console.log(e.target.result);
+                    console.log(this.fileMessage);
                     vm.sendFileMessage();
                 }
-                fileReader.readAsBinaryString(file);
-                
+
+                // fileReader.readAsBinaryString(file);
+                fileReader.readAsArrayBuffer(file);
             },
             findRoom: function() {
                 // console.log(crntDate.ShowCurrentDate());
